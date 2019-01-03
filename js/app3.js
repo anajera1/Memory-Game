@@ -2,44 +2,13 @@
  * Create a list that holds all of your cards
  */
 
-/*
- * Display the cards on the page
- *   - shuffle the list of cards using the provided "shuffle" method below
- *   - loop through each card and create its HTML
- *   - add each card's HTML to the page
- */
-
-// Shuffle function from http://stackoverflow.com/a/2450976
-function shuffle(array) {
-    var currentIndex = array.length, temporaryValue, randomIndex;
-
-    while (currentIndex !== 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
-    }
-    
-    return array;
-}
-
-
-const deck = document.querySelector('.deck');
+let matched = 0;
 let moves = 0;
 let clockOff = true;
 let time = 0;
 let clockId;
-let matched = 0;
 
 //clock functionality 
-
-function startClock() {
-   clockId = setInterval(() => {
-        time++;
-        displayTime();
-    }, 1000);
-}
 
 function displayTime() {
     const clock = document.querySelector('.clock');
@@ -53,18 +22,34 @@ function displayTime() {
     }  
 }
 
+function startClock() {
+   clockId = setInterval(() => {
+        time++;
+        displayTime();
+    }, 1000);
+}
+
 function stopClock() {
     clearInterval(clockId);
 }
 
-
+/*
+ * Display the cards on the page
+ *   - shuffle the list of cards using the provided "shuffle" method below
+ *   - loop through each card and create its HTML
+ *   - add each card's HTML to the page
+ */
 //moves functionality 
+
+const deck = document.querySelector('.deck');
 
 function addMove() {
     moves++;
     const movesText = document.querySelector('.moves');
     movesText.innerHTML = moves;
 }
+
+//stars functionality
 
 function checkScore() {
     if (moves === 16 || moves === 24) {
@@ -81,8 +66,6 @@ function hideStar() {
         }
     }
 }
-hideStar();
-hideStar();
 
 //shuffle functionality 
 
@@ -94,7 +77,6 @@ function shuffleDeck() {
     }
 }
 shuffleDeck();
-
 
 //toggle cards 
 
@@ -141,8 +123,8 @@ function isClickValid(clickTarget) {
     );
 }
 
-//check for matches 
 
+//check for matches 
 
 function checkForMatch() {
     if (
@@ -153,8 +135,8 @@ function checkForMatch() {
            toggledCards[0].classList.toggle('match');
            toggledCards[1].classList.toggle('match');
            toggledCards = []; 
-           matched++;
            setTimeout(function() {
+                checkGame();
            }, 1000);
            });
         
@@ -167,25 +149,27 @@ function checkForMatch() {
     }
 }
 
+// Shuffle function from http://stackoverflow.com/a/2450976
+function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    while (currentIndex !== 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+    }
+    
+    return array;
+}
+
 
 // modal with stats when game is over
-
 
 function toggleModal() {
     const modal = document.querySelector('.modal_background');
     modal.classList.toggle('hide');
-}
-
-   
-function writeModalStats() {
-    const timeStat = document.querySelector('.modal_time');
-    const clockTime = document.querySelector('.clock').innerHTML;
-    const movesStat = document.querySelector('.modal_moves');
-    const starsStat = document.querySelector('.modal_stars');
-    
-    timeStat.innerHTML = `Time = ${clockTime}`;
-    movesStat.innerHTML = `Moves = ${moves}`;
-    starsStat.innerHTML = `Stars = ${stars}`;
 }
 
 function getStars() {
@@ -196,18 +180,39 @@ function getStars() {
             starCount++;
         }
     }
+    console.log(starCount);
     return starCount;
 }
 
-document.querySelector('.modal_cancel').addEventListener('click', () => {
+function writeModalStats() {
+    const timeStat = document.querySelector('.modal_time');
+    const clockTime = document.querySelector('.clock').innerHTML;
+    const movesStat = document.querySelector('.modal_moves');
+    const starsStat = document.querySelector('.modal_stars');
+    const stars = getStars();
+    
+    timeStat.innerHTML = `Time = ${clockTime}`;
+    movesStat.innerHTML = `Moves = ${moves}`;
+    starsStat.innerHTML = `Stars = ${stars}`;
+}
+
+
+
+document.querySelector('.modal_button_cancel').addEventListener('click', () => {
     toggleModal();                                               
 });
 
+document.querySelector('.modal_button_replay').addEventListener('click', replayGame);
+
 document.querySelector('.restart').addEventListener('click', resetGame); 
+document.querySelector('.modal_button_replay').addEventListener('click', resetGame);  
 
-document.querySelector('.modal_replay').addEventListener('click', resetGame);  
-
-document.querySelector('.modal_replay').addEventListener('click', replayGame);  
+function resetClockAndTime() {
+        stopClock();
+        clockOff = true;
+        time = 0;
+        displayTime();
+}
     
 function resetGame() {
         resetClockAndTime();
@@ -216,17 +221,12 @@ function resetGame() {
         shuffleDeck();
     } 
     
-function resetClockAndTime() {
-        stopClock();
-        clockOff = true;
-        time = 0;
-        displayTime();
-    }
+
     
 function resetMoves() {
         moves = 0;
         document.querySelector('.moves').innerHTML = moves;
-    }
+}
     
 function resetStars() {
         stars = 0;
@@ -238,11 +238,13 @@ function resetStars() {
 
 // calling the modal 
 
-const totalPairs = 8; 
+function checkGame(){
+    matched += 1;
+    if (matched === 8) {
+        gameOver();
+    }
+} 
 
-if (matched === totalPairs){
-    gameOver();
-}
 
 function gameOver() {
     stopClock();
